@@ -13,6 +13,13 @@ class Todo(db.Model):
         self.body = body
         self.completed = completed
 
+    # Get all todos
+    @classmethod
+    def get_todos(cls):
+        todos = Todo.query.all()
+        return todos_schema.jsonify(todos)
+
+    # Create a todo
     @classmethod
     def create_todo(cls, body, completed):
         new_todo = Todo(body, completed)
@@ -24,6 +31,18 @@ class Todo(db.Model):
             raise
         return todo_schema.jsonify(new_todo)
 
+    # Delete a todo
+    @classmethod
+    def delete_todo(cls, todo_id):
+        todo = Todo.query.get(todo_id)
+        try:
+            db.session.remove(todo)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            raise
+        return 'Todo deleted'
+
 
 class TodoSchema(marshmallow.Schema):
     class Meta:
@@ -33,3 +52,7 @@ class TodoSchema(marshmallow.Schema):
 # Init Schema
 todo_schema = TodoSchema(strict=True)
 todos_schema = TodoSchema(many=True, strict=True)
+
+
+if __name__ == 'models':
+    db.create_all()
